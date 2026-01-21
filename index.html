@@ -84,17 +84,37 @@
     let model;
 
     loader.load(
-        "quat_hut.glb",
-        function (gltf) {
-            model = gltf.scene;
-            scene.add(model);
-        },
-        undefined,
-        function (error) {
-            console.error("Lỗi load model:", error);
-        }
-    );
+    "quat_hut.glb",
+    function (gltf) {
+        model = gltf.scene;
 
+        // Tính bounding box
+        const box = new THREE.Box3().setFromObject(model);
+        const size = box.getSize(new THREE.Vector3()).length();
+        const center = box.getCenter(new THREE.Vector3());
+
+        // Center model về (0,0,0)
+        model.position.x += (model.position.x - center.x);
+        model.position.y += (model.position.y - center.y);
+        model.position.z += (model.position.z - center.z);
+
+        // Auto scale cho vừa màn hình
+        const scale = 2 / size;
+        model.scale.setScalar(scale);
+
+        scene.add(model);
+
+        // Đưa camera nhìn đúng model
+        camera.position.set(0, 1.5, 3);
+        camera.lookAt(0, 0, 0);
+
+        console.log("Model loaded OK");
+    },
+    undefined,
+    function (error) {
+        console.error("Load lỗi:", error);
+    }
+);
     // Resize
     window.addEventListener("resize", () => {
         camera.aspect = window.innerWidth / (window.innerHeight - 100);
@@ -112,3 +132,4 @@
 
         controls.update();
         render
+
